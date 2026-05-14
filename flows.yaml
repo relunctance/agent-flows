@@ -1,0 +1,281 @@
+# Agent Flows 编排流程配置
+# 定义整体流程步骤和模块协作关系
+
+name: agent-flows
+version: "1.0"
+description: Agent 编排流程配置文件
+
+# 流程阶段定义
+stages:
+  # 初始化阶段
+  init:
+    name: "初始化阶段"
+    description: "系统初始化，创建必要的组件"
+    steps:
+      - id: create_session
+        name: "创建会话"
+        module: "session-manager"
+        action: "create_session"
+        inputs:
+          - session_name
+          - session_type
+        outputs:
+          - session_id
+        next_on_success: create_agent
+        next_on_failure: error
+
+      - id: create_agent
+        name: "创建 Agent"
+        module: "agent-manager"
+        action: "create_agent"
+        inputs:
+          - agent_name
+          - agent_type
+          - session_id
+        outputs:
+          - agent_id
+        spawn_method: "delegate_task"
+        next_on_success: setup_routes
+        next_on_failure: error
+
+      - id: setup_routes
+        name: "设置消息路由"
+        module: "message-router"
+        action: "add_route"
+        inputs:
+          - source_pattern
+          - target_pattern
+        outputs:
+          - route_id
+        next_on_success: ready
+        next_on_failure: error
+
+  # 运行阶段
+  running:
+    name: "运行阶段"
+    description: "Agent 执行任务，处理消息"
+    steps:
+      - id: route_message
+        name: "路由消息"
+        module: "message-router"
+        action: "route_message"
+        inputs:
+          - message
+        outputs:
+          - targets
+        filters:
+          - type: priority
+            min: 0
+            max: 3
+          - type: source
+            allowed_sources: []
+            denied_sources: []
+        next_on_success: deliver_message
+        next_on_failure: retry_route
+
+      - id: deliver_message
+        name: "投递消息"
+        module: "message-router"
+        action: "deliver_to_target"
+        inputs:
+          - message
+          - target_id
+        outputs:
+          - delivered
+        next_on_success: update_context
+
+      - id: update_context
+        name: "更新上下文"
+        module: "session-manager"
+        action: "update_context"
+        inputs:
+          - session_id
+          - key
+          - value
+        outputs:
+          - updated
+        next_on_success: process_response
+        next_on_failure: log_warning
+
+      - id: process_response
+        name: "处理响应"
+        module: "agent-manager"
+        action: "process_response"
+        inputs:
+          - agent_id
+          - response
+        outputs:
+          - result
+        next_on_success: check_continue
+
+      - id: check_continue
+        name: "检查是否继续"
+        type: decision
+        condition: "${task_complete}"
+        next_on_success: running_complete
+        next_on_failure: route_message
+
+  # 结束阶段
+  shutdown:
+    name: "结束阶段"
+    description: "优雅关闭所有组件"
+    steps:
+      - id: health_check_final
+        name: "最终健康检查"
+        module: "agent-manager"
+        action: "check_all_health"
+        inputs: []
+        outputs:
+          - health_results
+        next_on_success: terminate_agents
+
+      - id: terminate_agents
+        name: "终止所有 Agent"
+        module: "agent-manager"
+        action: "terminate_all"
+        inputs:
+          - reason
+        outputs:
+          - termination_results
+        graceful_shutdown: true
+        timeout: 30
+        next_on_success: close_sessions
+
+      - id: close_sessions
+        name: "关闭会话"
+        module: "session-manager"
+        action: "close_all_sessions"
+        inputs:
+          - reason
+        outputs:
+          - closed_count
+        next_on_success: complete
+        next_on_failure: force_cleanup
+
+      - id: force_cleanup
+        name: "强制清理"
+        type: emergency
+        description: "强制清理所有资源"
+        actions:
+          - unregister_all_agents
+          - clear_all_sessions
+          - flush_message_queues
+
+# Agent 管理配置
+agent_manager:
+  # Agent 创建配置
+  create:
+    default_timeout: 300
+    max_retries: 3
+    spawn_method: "delegate_task"
+    init_config:
+      health_check_interval: 30
+      heartbeat_timeout: 60
+
+  # 健康检查配置
+  health_check:
+    enabled: true
+    interval: 30
+    timeout: 5
+    max_consecutive_failures: 3
+    auto_remediate: false
+
+  # 终止配置
+  termination:
+    graceful_timeout: 30
+    force_on_timeout: true
+    cleanup_resources: true
+
+# 消息路由配置
+message_router:
+  # 路由配置
+  routing:
+    default_strategy: "direct"
+    fallback_strategy: "broadcast"
+    max_hops: 10
+
+  # 队列配置
+  queue:
+    max_size: 1000
+    overflow_policy: "drop_oldest"
+    priority_levels: 4
+
+  # 投递配置
+  delivery:
+    retry_count: 3
+    retry_delay: 1.0
+    delivery_timeout: 10
+
+# 会话管理配置
+session_manager:
+  # 会话配置
+  session:
+    max_per_user: 50
+    max_participants: 20
+    idle_timeout: 3600
+    auto_close_on_empty: false
+
+  # 上下文配置
+  context:
+    max_history: 1000
+    auto_save: true
+    persistence: false
+
+  # 协作配置
+  collaboration:
+    enabled: true
+    consensus_timeout: 30
+    max_parallel_tasks: 10
+
+# 错误处理
+error_handling:
+  # 重试策略
+  retry:
+    max_attempts: 3
+    backoff: "exponential"
+    initial_delay: 1.0
+    max_delay: 60.0
+
+  # 降级策略
+  degradation:
+    enabled: true
+    strategies:
+      - name: "reduce_agents"
+        condition: "high_load"
+        action: "scale_down"
+      - name: "disable_features"
+        condition: "resource_pressure"
+        action: "disable_non_critical"
+
+# 监控和日志
+monitoring:
+  enabled: true
+  metrics:
+    - agent_count
+    - message_throughput
+    - session_count
+    - error_rate
+    - response_time
+  log_level: "INFO"
+  trace_enabled: false
+
+# Flow 执行配置
+execution:
+  # 并发控制
+  concurrency:
+    max_parallel_agents: 100
+    max_parallel_messages: 500
+
+  # 超时控制
+  timeouts:
+    stage_init: 60
+    stage_running: 3600
+    stage_shutdown: 120
+    step_execution: 30
+
+  # 资源限制
+  limits:
+    max_agents: 1000
+    max_sessions: 500
+    max_messages_per_second: 10000
+    max_context_size_mb: 100
