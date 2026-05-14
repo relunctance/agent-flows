@@ -1,0 +1,61 @@
+# 流程模板
+# 使用此文件作为创建新流程的起点
+
+[flow]
+name = "my-flow"
+display_name = "我的流程"
+description = "流程描述"
+
+# 阶段定义
+[[phases]]
+name = "phase-1"
+display_name = "第一阶段"
+description = "阶段描述"
+
+[phases.roles]
+owner = "role-name"
+reviewer = null  # null 表示不需要评审
+executor = "role-name"
+
+[phases.skills]
+required = ["skill-1"]
+recommended = ["skill-2"]
+
+[phases.artifacts]
+output_dir = "artifacts/phase-1"
+versioned = true
+files = ["*.md"]
+
+[phases.review]
+required = false
+auto_advance = false
+reject_action = "revise"
+human_required = false
+
+[[phases]]
+name = "phase-2"
+display_name = "第二阶段"
+description = "阶段描述"
+
+[phases.roles]
+owner = "role-name"
+reviewer = null
+executor = "role-name"
+
+[phases.skills]
+required = ["skill-1"]
+recommended = []
+
+[phases.artifacts]
+output_dir = "artifacts/phase-2"
+versioned = true
+files = ["*.md"]
+
+[phases.review]
+required = false
+auto_advance = false
+reject_action = "revise"
+
+# 依赖上一阶段
+[phases.blocked_by]
+phases = ["phase-1"]

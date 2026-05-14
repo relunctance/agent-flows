@@ -1,0 +1,98 @@
+# 软件研发流程
+# 适用于软件开发项目的标准流程
+
+[flow]
+name = "software-dev"
+display_name = "软件研发流程"
+description = "适用于软件开发项目的标准流程，包含规划、实现、测试、发布四个阶段"
+
+[[phases]]
+name = "plan"
+display_name = "规划阶段"
+description = "需求分析、任务分解、架构设计"
+
+[phases.roles]
+owner = "architect"
+reviewer = "delivery-director"
+executor = "architect"
+
+[phases.skills]
+required = ["brainstorming", "writing-plans"]
+recommended = ["systematic-debugging"]
+
+[phases.artifacts]
+output_dir = "artifacts/plan"
+versioned = true
+files = ["plan.md", "tasks.yaml"]
+
+[phases.review]
+required = true
+auto_advance = false
+reject_action = "revise"
+escalate_to = "delivery-director"
+
+[[phases]]
+name = "implement"
+display_name = "实现阶段"
+description = "编码实现、TDD 测试"
+
+blocked_by = ["plan"]
+
+[phases.roles]
+owner = "engineer"
+reviewer = "architect"
+executor = "engineer"
+
+[phases.skills]
+required = ["test-driven-development", "writing-plans"]
+recommended = ["systematic-debugging", "requesting-code-review"]
+
+[phases.artifacts]
+output_dir = "artifacts/implement"
+versioned = true
+files = ["src/**"]
+
+[phases.review]
+required = true
+reject_action = "revise"
+
+[[phases]]
+name = "test"
+display_name = "测试阶段"
+description = "集成测试、质量验证"
+
+blocked_by = ["implement"]
+
+[phases.roles]
+owner = "qa"
+reviewer = "delivery-director"
+executor = "qa"
+
+[phases.skills]
+required = ["verification-before-completion", "test-driven-development"]
+
+[phases.artifacts]
+output_dir = "artifacts/test"
+versioned = true
+files = ["test-report.md", "coverage.json"]
+
+[phases.review]
+required = false
+auto_advance = true
+
+[[phases]]
+name = "release"
+display_name = "发布阶段"
+description = "部署上线"
+
+blocked_by = ["test"]
+
+[phases.roles]
+owner = "delivery-director"
+executor = "delivery-director"
+
+[phases.review]
+required = true
+human_required = true
+auto_advance = false
+reject_action = "abort"

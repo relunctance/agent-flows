@@ -1,0 +1,156 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "FlowTemplate",
+  "description": "Agent Flows 流程定义 schema",
+  "type": "object",
+  "required": ["flow", "phases"],
+  "additionalProperties": false,
+  "properties": {
+    "flow": {
+      "type": "object",
+      "description": "流程基本信息",
+      "required": ["name", "display_name"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "唯一标识符，只能包含小写字母、数字、连字符",
+          "pattern": "^[a-z0-9-]+$"
+        },
+        "display_name": {
+          "type": "string",
+          "description": "人类可读的显示名称"
+        },
+        "description": {
+          "type": "string",
+          "description": "流程的详细描述"
+        }
+      }
+    },
+    "phases": {
+      "type": "array",
+      "description": "流程阶段列表",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "description": "单个阶段定义",
+        "required": ["name", "display_name", "roles"],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "阶段唯一标识符",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "display_name": {
+            "type": "string",
+            "description": "人类可读的阶段名称"
+          },
+          "description": {
+            "type": "string",
+            "description": "阶段的详细描述"
+          },
+          "roles": {
+            "type": "object",
+            "description": "阶段角色配置",
+            "required": ["owner"],
+            "additionalProperties": false,
+            "properties": {
+              "owner": {
+                "type": "string",
+                "description": "主负责人角色名"
+              },
+              "reviewer": {
+                "type": ["string", "null"],
+                "description": "评审人角色名，null 表示不需要评审"
+              },
+              "executor": {
+                "type": "string",
+                "description": "执行人角色名"
+              }
+            }
+          },
+          "skills": {
+            "type": "object",
+            "description": "阶段技能要求配置",
+            "required": ["required"],
+            "additionalProperties": false,
+            "properties": {
+              "required": {
+                "type": "array",
+                "description": "必须安装的 skills 列表",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "recommended": {
+                "type": "array",
+                "description": "建议安装的 skills 列表",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "artifacts": {
+            "type": "object",
+            "description": "阶段产物配置",
+            "additionalProperties": false,
+            "properties": {
+              "output_dir": {
+                "type": "string",
+                "description": "产物输出目录，相对于 workspace"
+              },
+              "versioned": {
+                "type": "boolean",
+                "description": "是否启用版本管理，默认 true"
+              },
+              "files": {
+                "type": "array",
+                "description": "预期的产物文件模式",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "blocked_by": {
+            "type": "array",
+            "description": "依赖的前置阶段列表",
+            "items": {
+              "type": "string"
+            }
+          },
+          "review": {
+            "type": "object",
+            "description": "评审配置",
+            "additionalProperties": false,
+            "properties": {
+              "required": {
+                "type": "boolean",
+                "description": "是否必须评审，默认 false"
+              },
+              "auto_advance": {
+                "type": "boolean",
+                "description": "评审通过后是否自动进入下一阶段，默认 false"
+              },
+              "reject_action": {
+                "type": "string",
+                "description": "评审不通过时的处理：revise | skip | abort",
+                "enum": ["revise", "skip", "abort"]
+              },
+              "human_required": {
+                "type": "boolean",
+                "description": "是否需要人类审批，默认 false"
+              },
+              "escalate_to": {
+                "type": "string",
+                "description": "评审升级到的角色"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
