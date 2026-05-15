@@ -8,6 +8,12 @@
 
 ### 新增
 
+- **CLI 实现**: `agent_flows/cli/` 目录及 `list.py`, `load.py`, `status.py`
+  - `python -m agent_flows.cli list` - 列出所有 flow
+  - `python -m agent_flows.cli load <flow> <team>` - 绑定 flow 到团队
+  - `python -m agent_flows.cli status <team>` - 获取团队当前阶段
+  - 团队状态存储在 `~/.agent-flows/teams/`
+
 - **docs/ 目录结构**: 按照 dir-skill 规范创建标准项目目录
   - `docs/PRD/` - 产品需求文档
   - `docs/decisions/` - 关键决策记录

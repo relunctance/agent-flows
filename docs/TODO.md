@@ -4,13 +4,13 @@
 
 ### CLI 实现
 
-- [ ] 创建 CLI 目录结构 (`agent_flows/cli/`)
-- [ ] 实现 `python -m agent_flows.cli list` 命令
-- [ ] 实现 `python -m agent_flows.cli load <flow> <team>` 命令
-- [ ] 实现 `python -m agent_flows.cli status <team>` 命令
-- [ ] 添加 toml 依赖到项目
+- [x] 创建 CLI 目录结构 (`agent_flows/cli/`)
+- [x] 实现 `python -m agent_flows.cli list` 命令
+- [x] 实现 `python -m agent_flows.cli load <flow> <team>` 命令
+- [x] 实现 `python -m agent_flows.cli status <team>` 命令
+- [x] 添加 toml 依赖到项目
 - [ ] 编写 CLI 测试用例
-- [ ] 验证 list/load/status 命令
+- [x] 验证 list/load/status 命令
 
 ### Expert Teams 集成
 
