@@ -80,14 +80,18 @@ def get_status(team_id: str):
             'blocked_by': current_phase.get('blocked_by', [])
         }
 
-    # 构建 pending 列表
+    # 构建 pending（可执行但未完成）和 blocked（被阻塞）列表
     pending = []
+    blocked = []
     for phase in phases:
         phase_name = phase.get('name')
-        if phase_name not in completed:
-            blocked_by = phase.get('blocked_by', [])
-            if all(b in completed for b in blocked_by):
-                pending.append(phase_name)
+        if phase_name in completed:
+            continue
+        blocked_by = phase.get('blocked_by', [])
+        if all(b in completed for b in blocked_by):
+            pending.append(phase_name)
+        else:
+            blocked.append(phase_name)
 
     # 构建输出
     output = {
@@ -99,7 +103,7 @@ def get_status(team_id: str):
         'next_phase': next_phase_name,
         'status': {
             'pending': pending,
-            'blocked': [p.get('name') for p in phases if p.get('name') not in completed and p.get('name') not in pending]
+            'blocked': blocked
         }
     }
 

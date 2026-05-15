@@ -99,23 +99,17 @@ stock-analysis
   "flow": "software-dev",
   "current_phase": "plan",
   "completed_phases": [],
-  "phase_info": {
-    "name": "plan",
-    "display_name": "规划阶段",
-    "description": "需求分析、任务分解、架构设计",
-    "owner": "architect",
-    "reviewer": "delivery-director",
-    "required_skills": ["brainstorming", "writing-plans"],
-    "recommended_skills": ["systematic-debugging"],
-    "output_dir": "artifacts/plan",
-    "blocked_by": []
-  },
+  "phase_info": { ... },
   "next_phase": "implement",
   "status": {
-    "pending": ["implement", "test", "release"],
-    "blocked": []
+    "pending": ["plan"],
+    "blocked": ["implement", "test", "release"]
   }
 }
+```
+
+**pending**: 可执行但尚未完成的阶段（所有 blocked_by 已完成）
+**blocked**: 被阻塞的阶段（有未完成的 blocked_by）
 ```
 
 **错误处理**:
