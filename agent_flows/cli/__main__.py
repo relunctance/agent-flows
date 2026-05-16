@@ -26,6 +26,10 @@ def main():
     status_parser = subparsers.add_parser('status', help='获取团队当前阶段')
     status_parser.add_argument('team_id', help='团队 ID')
 
+    # advance 命令
+    advance_parser = subparsers.add_parser('advance', help='进入下一阶段')
+    advance_parser.add_argument('team_id', help='团队 ID')
+
     args = parser.parse_args()
 
     if args.command is None:
@@ -42,6 +46,9 @@ def main():
     elif args.command == 'status':
         from .status import get_status
         get_status(args.team_id)
+    elif args.command == 'advance':
+        from .advance import advance_phase
+        advance_phase(args.team_id)
     else:
         parser.print_help()
 
