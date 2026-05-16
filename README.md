@@ -1,4 +1,8 @@
 # Agent Flows
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)]()
+[![version](https://img.shields.io/badge/version--green.svg)]()
+[![category](https://img.shields.io/badge/category--blue.svg)]()
+[![platforms](https://img.shields.io/badge/platforms-hermes-blue.svg)]()
 
 多阶段工作流程定义库。
 
